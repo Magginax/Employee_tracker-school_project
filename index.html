@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>SAP Logon 740</title>
+  <link rel="icon" type="image/svg+xml" href="SAP-icon.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="screen-login">
+  <div class="win-titlebar">
+    <span>SAP Logon 740</span>
+    <div class="win-btns">
+      <span class="win-btn">_</span>
+      <span class="win-btn">&#9633;</span>
+      <span class="win-btn">&#10005;</span>
+    </div>
+  </div>
+  <div class="login-body">
+    <div class="login-logo-area">
+      <div class="sap-logo-text">SAP</div>
+      <div class="login-system-name">Evidence zaměstnanců &mdash; HR modul</div>
+      <div class="login-system-id">Systém: HR-PROD &nbsp;|&nbsp; Server: SAPHR01 &nbsp;|&nbsp; Verze: 740</div>
+    </div>
+    <div class="login-divider-h"></div>
+    <table class="login-form-table">
+      <tr>
+        <td class="login-label">Klient</td>
+        <td><input type="text" class="login-input" value="001" maxlength="3" style="width:50px;"></td>
+      </tr>
+      <tr>
+        <td class="login-label">Uživatel</td>
+        <td><input type="text" id="login-user" class="login-input" value="ADMIN" maxlength="12" style="width:150px;" autocomplete="username"></td>
+      </tr>
+      <tr>
+        <td class="login-label">Heslo</td>
+        <td><input type="password" id="login-pass" class="login-input" style="width:150px;" autocomplete="current-password"></td>
+      </tr>
+      <tr>
+        <td class="login-label">Jazyk</td>
+        <td><input type="text" class="login-input" value="CS" maxlength="2" style="width:35px;"></td>
+      </tr>
+    </table>
+    <div style="text-align:right; margin-top:14px;">
+      <button class="sap-btn primary" onclick="doLogin()">Přihlásit</button>
+    </div>
+    <div id="login-error" class="login-error"></div>
+  </div>
+</div>
+
+<!-- ===== MAIN SAP WINDOW ===== -->
+<div id="screen-main">
+
+  <!-- Title bar -->
+  <div class="sap-titlebar">
+    <div class="titlebar-left">
+      <span class="sap-logo-small">SAP</span>
+      <span id="screen-title">Podnikové IS - Evidence zaměstnanců</span>
+    </div>
+    <div class="titlebar-right">
+      <span id="current-user">ADMIN</span>
+      &nbsp;|&nbsp; Klient: 001 &nbsp;|&nbsp; CS
+    </div>
+  </div>
+
+  <!-- Menu bar -->
+  <div class="sap-menubar" id="menubar">
+
+    <div class="menu-wrap">
+      <span class="menu-item" onclick="toggleMenu('m-emp')">Zaměstnanec</span>
+      <div class="menu-dropdown" id="m-emp">
+        <div class="mdd-item" onclick="menuAction('pa20')">Zobrazit zaměstnance <span class="mdd-tcode">PA20</span></div>
+        <div class="mdd-item" onclick="menuAction('pa30')">Změnit zaměstnance <span class="mdd-tcode">PA30</span></div>
+        <div class="mdd-item" onclick="menuAction('pa40')">Nástup zaměstnance <span class="mdd-tcode">PA40</span></div>
+        <div class="mdd-sep"></div>
+        <div class="mdd-item" onclick="menuAction('print-emp')">Tisk seznamu...</div>
+      </div>
+    </div>
+
+    <div class="menu-wrap">
+      <span class="menu-item" onclick="toggleMenu('m-zprac')">Zpracování</span>
+      <div class="menu-dropdown" id="m-zprac">
+        <div class="mdd-label">Docházka</div>
+        <div class="mdd-item" onclick="menuAction('pt10')">Nový záznam docházky <span class="mdd-tcode">PT10</span></div>
+        <div class="mdd-item" onclick="menuAction('pt40')">Přehled docházky <span class="mdd-tcode">PT40</span></div>
+        <div class="mdd-sep"></div>
+        <div class="mdd-label">Dovolená</div>
+        <div class="mdd-item" onclick="menuAction('pt50')">Nová žádost o dovolenou <span class="mdd-tcode">PT50</span></div>
+        <div class="mdd-item" onclick="menuAction('pt60')">Přehled dovolené <span class="mdd-tcode">PT60</span></div>
+      </div>
+    </div>
+
+    <div class="menu-wrap">
+      <span class="menu-item" onclick="toggleMenu('m-pohled')">Pohled</span>
+      <div class="menu-dropdown" id="m-pohled">
+        <div class="mdd-item" onclick="menuAction('view-emp')">&#10003; Zaměstnanci</div>
+        <div class="mdd-item" onclick="menuAction('view-ts')">&#160;&#160;&#160; Docházka</div>
+        <div class="mdd-item" onclick="menuAction('view-vac')">&#160;&#160;&#160; Dovolená</div>
+        <div class="mdd-item" onclick="menuAction('view-ov')">&#160;&#160;&#160; Přehledy</div>
+        <div class="mdd-sep"></div>
+        <div class="mdd-item" onclick="menuAction('refresh')">Obnovit <span class="mdd-tcode">F5</span></div>
+      </div>
+    </div>
+
+    <div class="menu-wrap">
+      <span class="menu-item" onclick="toggleMenu('m-tools')">Nástroje</span>
+      <div class="menu-dropdown" id="m-tools">
+        <div class="mdd-item" onclick="menuAction('export')">Export dat (JSON)...</div>
+        <div class="mdd-sep"></div>
+        <div class="mdd-item" onclick="menuAction('load-demo')">Načíst vzorová data</div>
+        <div class="mdd-item mdd-danger" onclick="menuAction('clear-data')">Vymazat všechna data</div>
+      </div>
+    </div>
+
+    <div class="menu-wrap">
+      <span class="menu-item" onclick="toggleMenu('m-system')">Systém</span>
+      <div class="menu-dropdown" id="m-system">
+        <div class="mdd-item" onclick="menuAction('sysinfo')">Informace o systému</div>
+        <div class="mdd-sep"></div>
+        <div class="mdd-item" onclick="menuAction('logout')">Odhlásit <span class="mdd-tcode">Shift+F3</span></div>
+      </div>
+    </div>
+
+    <div class="menu-wrap">
+      <span class="menu-item" onclick="toggleMenu('m-help')">Nápověda</span>
+      <div class="menu-dropdown" id="m-help">
+        <div class="mdd-item" onclick="menuAction('help-keys')">Klávesové zkratky</div>
+        <div class="mdd-item" onclick="menuAction('help-tcodes')">Kódy transakcí</div>
+        <div class="mdd-sep"></div>
+        <div class="mdd-item" onclick="menuAction('help-about')">O aplikaci</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Toolbar -->
+  <div class="sap-toolbar">
+    <button class="toolbar-btn" title="Zpět (F3)">&#9664;</button>
+    <button class="toolbar-btn" title="Ukončit (F15)" onclick="doLogout()">&#9650;</button>
+    <button class="toolbar-btn" title="Zrušit (F12)" onclick="closeModal()">&#10005;</button>
+    <div class="toolbar-sep"></div>
+    <button class="toolbar-btn" title="Uložit (Ctrl+S)">&#9632;</button>
+    <div class="toolbar-sep"></div>
+    <button class="toolbar-btn" title="Obnovit (F5)" onclick="renderSection(currentSection)">&#8635;</button>
+    <div class="toolbar-sep"></div>
+    <input type="text" id="tcode-input" class="tcode-input" placeholder="Transakce" title="Kód transakce (Enter pro spuštění)">
+    <button class="toolbar-btn" onclick="runTCode()" title="Spustit transakci (Enter)">&#9654;</button>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="sap-tabs">
+    <button class="sap-tab active" data-section="employees" onclick="renderSection('employees')">Zaměstnanci</button>
+    <button class="sap-tab" data-section="timesheet"  onclick="renderSection('timesheet')">Docházka</button>
+    <button class="sap-tab" data-section="vacation"   onclick="renderSection('vacation')">Dovolená</button>
+    <button class="sap-tab" data-section="overview"   onclick="renderSection('overview')">Přehledy</button>
+  </div>
+
+  <!-- Content -->
+  <div id="content-area">
+    <p class="no-data">Načítání...</p>
+  </div>
+
+  <!-- Help Box -->
+  <div id="help-box" class="help-box">
+    <div class="help-header" onclick="toggleHelp()">
+      <span>&#10067; Nápověda</span>
+      <span id="help-chevron">&#9660;</span>
+    </div>
+    <div class="help-body" id="help-body">
+      <div id="help-ctx"></div>
+      <hr class="sap-hr">
+      <div class="help-section-title">Klávesové zkratky</div>
+      <table class="help-keys">
+        <tr><td>F5</td>        <td>Obnovit záložku</td></tr>
+        <tr><td>Esc</td>       <td>Zavřít dialog</td></tr>
+        <tr><td>Enter</td>     <td>Potvrdit / Přihlásit</td></tr>
+        <tr><td>Shift+F3</td>  <td>Odhlásit</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Status bar -->
+  <div class="sap-statusbar">
+    <span class="status-indicator green" id="status-indicator">&#9679;</span>
+    <span id="status-msg">Připraven</span>
+    <div class="statusbar-right">
+      <span id="status-datetime"></span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== MODAL ===== -->
+<div id="modal-overlay">
+  <div id="modal">
+    <div class="modal-titlebar">
+      <span id="modal-title-text">Dialog</span>
+      <button class="win-btn" onclick="closeModal()">&#10005;</button>
+    </div>
+    <div class="modal-content" id="modal-content"></div>
+    <div class="modal-footer">
+      <button class="sap-btn primary" id="modal-save-btn" onclick="saveModal()">&#10003;&nbsp; Uložit</button>
+      <button class="sap-btn" onclick="closeModal()">&#10005;&nbsp; Zrušit</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
