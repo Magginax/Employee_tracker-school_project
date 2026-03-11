@@ -146,11 +146,14 @@ const TCODES = {
   PT50: 'vacation',  PT60: 'vacation',
   S001: 'overview',
 };
+const EASTER_TCODES = { 'KAFE': () => triggerKafe(), 'DOKTOR': () => triggerDoktor() };
+
 function runTCode() {
   const tc = document.getElementById('tcode-input').value.trim().toUpperCase();
-  const section = TCODES[tc];
-  if (section) { renderSection(section); document.getElementById('tcode-input').value = ''; }
-  else if (tc) showStatus(`Transakce "${tc}" nenalezena.`, 'error');
+  document.getElementById('tcode-input').value = '';
+  if (TCODES[tc]) { renderSection(TCODES[tc]); return; }
+  if (EASTER_TCODES[tc]) { EASTER_TCODES[tc](); return; }
+  if (tc) showStatus(`Transakce "${tc}" nenalezena.`, 'error');
 }
 
 // ---- NAVIGATION ----
@@ -926,6 +929,253 @@ function toggleHelp() {
 }
 
 // ============================================================
+// EASTER EGGS
+// ============================================================
+
+// --- 1. Konami kód → Matrix ---
+function initKonami() {
+  const SEQ = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+  let idx = 0;
+  document.addEventListener('keydown', e => {
+    if (!document.getElementById('screen-main').classList.contains('visible')) { idx = 0; return; }
+    idx = (e.key === SEQ[idx]) ? idx + 1 : (e.key === SEQ[0] ? 1 : 0);
+    if (idx === SEQ.length) { idx = 0; triggerMatrix(); }
+  });
+}
+
+function triggerMatrix() {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:9998;';
+  const canvas = document.createElement('canvas');
+  canvas.style.cssText = 'position:absolute;top:0;left:0;';
+  overlay.appendChild(canvas);
+  document.body.appendChild(overlay);
+
+  const ctx = canvas.getContext('2d');
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789アイウエオカキクケコ';
+  const cols   = Math.floor(canvas.width / 14);
+  const drops  = Array.from({ length: cols }, () => Math.random() * -60);
+  let elapsed  = 0;
+
+  const id = setInterval(() => {
+    elapsed++;
+    ctx.fillStyle = 'rgba(0,0,0,0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#00FF41';
+    ctx.font = '14px monospace';
+    drops.forEach((y, i) => {
+      ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * 14, y * 14);
+      if (y * 14 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
+    });
+
+    if (elapsed === 130) {
+      ctx.fillStyle = 'rgba(0,0,0,0.82)';
+      ctx.fillRect(canvas.width / 2 - 310, canvas.height / 2 - 90, 620, 175);
+      ctx.strokeStyle = '#00FF41';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(canvas.width / 2 - 310, canvas.height / 2 - 90, 620, 175);
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#00FF41';
+      ctx.font = 'bold 19px "Courier New"';
+      ctx.fillText('WAKE UP, ZAMĚSTNANEC...', canvas.width / 2, canvas.height / 2 - 45);
+      ctx.font = '13px "Courier New"';
+      ctx.fillText('SAP ví, že jsi tady.', canvas.width / 2, canvas.height / 2 - 15);
+      ctx.fillText('Pracovní doba: 8:00 – nekonečno.', canvas.width / 2, canvas.height / 2 + 14);
+      ctx.fillText('Dovolená: viz transakce PT50 (pokud schválena).', canvas.width / 2, canvas.height / 2 + 38);
+      ctx.fillStyle = '#507050';
+      ctx.font = '11px "Courier New"';
+      ctx.fillText('[ Klikni pro návrat do matrice ]', canvas.width / 2, canvas.height / 2 + 72);
+      overlay.style.cursor = 'pointer';
+      overlay.onclick = () => { clearInterval(id); overlay.remove(); ctx.textAlign = 'left'; };
+    }
+    if (elapsed > 400) { clearInterval(id); overlay.remove(); ctx.textAlign = 'left'; }
+  }, 30);
+}
+
+// --- 2. T-kód KAFE → Schválená přestávka ---
+function triggerKafe() {
+  const back = new Date(Date.now() + 15 * 60000).toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
+  const html = `
+    <div style="text-align:center;padding:8px 0 12px">
+      <div style="font-size:42px;margin-bottom:6px">&#9749;</div>
+      <div style="font-size:13px;font-weight:bold;color:#003399">Přestávka schválena systémem SAP HR</div>
+      <div style="font-size:10px;color:#606060;margin-top:3px">Transakce KAFE — Správa pracovních přerušení v. 3.2</div>
+    </div>
+    <table class="form-table">
+      <tr><td>Typ přestávky:</td>     <td><strong>Kávová pauza (KP-15)</strong></td></tr>
+      <tr><td>Trvání:</td>            <td><strong>15 minut</strong></td></tr>
+      <tr><td>Schválil:</td>          <td><strong>Automat. systém HR (robot)</strong></td></tr>
+      <tr><td>Návrat nejpozději:</td> <td><strong style="color:#AA0000">${back}</strong></td></tr>
+      <tr><td>Odpočet:</td>           <td><strong id="kafe-cd" style="color:#003399;font-size:14px">15:00</strong></td></tr>
+    </table>
+    <div style="margin-top:10px;padding:7px 9px;background:#FFFACC;border:1px solid #AAAA00;font-size:10px;color:#555500">
+      &#9888; Upozornění: Přesáhnutí schválené doby bude zaznamenáno v docházkovém systému.
+      Opakované porušení může vést k automatickému odpočtu z dovolené (MKN-10: Z73.0).
+    </div>`;
+  showModal('Správa pracovních přestávek (KAFE)', html, () => true);
+  setTimeout(() => {
+    const btn = document.getElementById('modal-save-btn');
+    if (btn) { btn.textContent = '✓ Beru na vědomí'; btn.onclick = closeModal; }
+    let rem = 15 * 60;
+    const tid = setInterval(() => {
+      const el = document.getElementById('kafe-cd');
+      if (!el) { clearInterval(tid); return; }
+      rem--;
+      const m = Math.floor(rem / 60), s = rem % 60;
+      el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      if (rem <= 60) el.style.color = '#AA0000';
+      if (rem <= 0) { clearInterval(tid); el.textContent = 'VYPRŠELA'; }
+    }, 1000);
+  }, 50);
+}
+
+// --- 3. T-kód DOKTOR → Diagnostická zpráva ---
+function triggerDoktor() {
+  const user    = document.getElementById('current-user')?.textContent || 'ADMIN';
+  const tsCount = DB.timesheet.length;
+  const pending = DB.vacation.filter(v => v.stav === 'Čeká na schválení').length;
+  const html = `
+    <div style="background:#003399;color:#FFF;padding:5px 10px;font-weight:bold;margin-bottom:10px;font-size:12px">
+      SAP HR — Diagnostická zpráva &nbsp;|&nbsp; Důvěrné
+    </div>
+    <table class="form-table">
+      <tr><td>Pacient:</td>           <td><strong>${user}</strong></td></tr>
+      <tr><td>Datum vyšetření:</td>   <td><strong>${new Date().toLocaleDateString('cs-CZ')}</strong></td></tr>
+      <tr><td>Diagnóza (MKN-10):</td> <td><strong style="color:#AA0000">Z73.0 — Akutní workoholismus</strong></td></tr>
+      <tr><td>Stav:</td>              <td><span class="badge badge-red">KRITICKÝ</span></td></tr>
+    </table>
+    <hr class="sap-hr">
+    <div style="font-weight:bold;margin-bottom:5px">Klinické příznaky:</div>
+    <div style="font-size:11px;line-height:2.1">
+      &#9679; Správa <strong>${DB.employees.length}</strong> zaměstnanců bez viditelné únavy<br>
+      &#9679; Pořízeno <strong>${tsCount}</strong> záznamů docházky (norma: 0)<br>
+      &#9679; <strong>${pending}</strong> nevyřízených žádostí (symptom chronického přetížení)<br>
+      &#9679; Dobrovolné používání SAP rozhraní z roku 1990 (velmi závažný příznak)
+    </div>
+    <hr class="sap-hr">
+    <div style="font-weight:bold;margin-bottom:5px">Lékařské doporučení:</div>
+    <div style="font-size:11px;line-height:2.1">
+      &#10003; Okamžitá dovolená — minimálně 14 dní (viz transakce PT50)<br>
+      &#10003; Redukce počtu schůzek o 73 %<br>
+      &#10003; Zákaz kontroly e-mailu po 17:00<br>
+      &#10003; Denní příjem kávy max. 3 šálky (viz transakce KAFE)
+    </div>
+    <div style="margin-top:10px;padding:6px 9px;background:#CCFFCC;border:1px solid #00AA00;font-size:10px">
+      &#10003; Zpráva odeslána pojišťovně. Náhrada: 14 dní placeného léčení.
+      <em>(Platné pouze v tomto systému.)</em>
+    </div>`;
+  showModal('SAP Medicínský modul — Diagnostika (DOKTOR)', html, () => true);
+  setTimeout(() => { const btn = document.getElementById('modal-save-btn'); if (btn) btn.style.display = 'none'; }, 0);
+}
+
+// --- 4. Status indikátor 10× klik → Spořič ---
+function initScreensaverEgg() {
+  let clicks = 0, t = null;
+  const el = document.getElementById('status-indicator');
+  if (!el) return;
+  el.addEventListener('click', () => {
+    clicks++;
+    clearTimeout(t);
+    t = setTimeout(() => { clicks = 0; }, 2500);
+    if (clicks >= 10) { clicks = 0; triggerScreensaver(); }
+  });
+}
+
+function triggerScreensaver() {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:9998;cursor:none;';
+
+  const label = document.createElement('div');
+  label.innerHTML = '<span style="font-weight:bold;font-style:italic;font-size:38px;padding:8px 20px;border-radius:2px;white-space:nowrap;">SAP</span>';
+  label.style.cssText = 'position:absolute;color:#FFF;';
+  overlay.appendChild(label);
+
+  const hint = document.createElement('div');
+  hint.textContent = 'Klikni nebo stiskni klávesu pro pokračování';
+  hint.style.cssText = 'position:absolute;bottom:20px;width:100%;text-align:center;color:#333;font-size:11px;font-family:Arial,sans-serif;';
+  overlay.appendChild(hint);
+  document.body.appendChild(overlay);
+
+  const W = window.innerWidth, H = window.innerHeight;
+  const BW = 160, BH = 60;
+  let x = W / 2, y = H / 2, dx = 2.2, dy = 1.9;
+  const COLORS = ['#FFF', '#003399', '#CC0000', '#00AA00', '#FF8800', '#9900CC'];
+  let ci = 0;
+
+  const dismiss = () => { cancelAnimationFrame(raf); overlay.remove(); };
+  overlay.addEventListener('click', dismiss);
+  document.addEventListener('keydown', dismiss, { once: true });
+
+  let raf;
+  function frame() {
+    x += dx; y += dy;
+    let bounced = false;
+    if (x + BW >= W) { x = W - BW; dx = -Math.abs(dx); bounced = true; }
+    if (x <= 0)       { x = 0;       dx =  Math.abs(dx); bounced = true; }
+    if (y + BH >= H)  { y = H - BH;  dy = -Math.abs(dy); bounced = true; }
+    if (y <= 0)        { y = 0;       dy =  Math.abs(dy); bounced = true; }
+    if (bounced) { ci = (ci + 1) % COLORS.length; label.querySelector('span').style.color = COLORS[ci]; }
+    label.style.left = x + 'px';
+    label.style.top  = y + 'px';
+    raf = requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+// --- 5. SAP logo v titulbaru 7× rychle → BSOD ---
+function initBsodEgg() {
+  let clicks = 0, t = null;
+  const el = document.querySelector('.sap-logo-small');
+  if (!el) return;
+  el.style.cursor = 'default';
+  el.addEventListener('click', () => {
+    clicks++;
+    clearTimeout(t);
+    t = setTimeout(() => { clicks = 0; }, 1800);
+    if (clicks >= 7) { clicks = 0; triggerBsod(); }
+  });
+}
+
+function triggerBsod() {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `
+    position:fixed;top:0;left:0;width:100%;height:100%;
+    background:#0000AA;color:#FFF;z-index:9999;
+    font-family:"Courier New",monospace;font-size:12px;
+    padding:40px 70px;line-height:1.8;`;
+  overlay.innerHTML = `
+    <div style="background:#AAAAAA;color:#0000AA;display:inline-block;padding:1px 8px;font-weight:bold;margin-bottom:20px;font-size:13px">Windows</div>
+    <div style="font-size:15px;margin-bottom:20px;font-weight:bold">
+      A fatal exception 0E has occurred at 0028:SAP_HR+00000042. The current<br>
+      application will be terminated.
+    </div>
+    <div style="margin-bottom:20px">
+      * Press any key to terminate the current application.<br>
+      * Press CTRL+ALT+DEL again to restart your career.<br>
+        You will lose any unsaved vacation days.
+    </div>
+    <div style="margin-bottom:24px">
+      Chybový kód: EMPLOYEE_NOT_FOUND<br>
+      Soubor: docházka.dll<br>
+      *** STOP: 0x0000KAFE (0xC0000034, 0xDEADB055, 0xFEEDC0DE, 0x00DONUT)
+    </div>
+    <div id="bsod-cd">Systém se restartuje za 5 sekund...</div>`;
+  document.body.appendChild(overlay);
+
+  let s = 5;
+  const tid = setInterval(() => {
+    s--;
+    const el = document.getElementById('bsod-cd');
+    if (el) el.textContent = s > 0 ? `Systém se restartuje za ${s} sekund...` : 'Restartování SAP...';
+    if (s <= 0) { clearInterval(tid); overlay.remove(); showStatus('Systém úspěšně restartován. Ztracena data: žádná.', 'ok'); }
+  }, 1000);
+}
+
+// ============================================================
 // INIT
 // ============================================================
 window.addEventListener('DOMContentLoaded', () => {
@@ -948,4 +1198,9 @@ window.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('click', e => {
     if (!e.target.closest('.menu-wrap')) closeAllMenus();
   });
+
+  // Easter eggs
+  initKonami();
+  initScreensaverEgg();
+  initBsodEgg();
 });
