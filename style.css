@@ -185,6 +185,7 @@ body {
   background: #D4D0C8; padding: 2px 6px;
   display: flex; align-items: center; gap: 8px;
   border-top: 1px solid #808080; font-size: 11px; flex-shrink: 0;
+  position: relative; z-index: 300;
 }
 .status-indicator { font-size: 13px; }
 .status-indicator.green  { color: #00AA00; }
@@ -441,7 +442,7 @@ hr.sap-hr {
    HELP BOX
    ============================================================ */
 .help-box {
-  position: absolute; bottom: 26px; right: 8px; z-index: 200;
+  position: absolute; bottom: 32px; right: 8px; z-index: 200;
   width: 220px;
   background: #FFFFF0;
   border: 2px solid; border-color: #FFF #808080 #808080 #FFF;
