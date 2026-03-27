@@ -86,6 +86,53 @@ body {
 }
 
 /* ============================================================
+   DEMO ACCOUNTS WINDOW
+   ============================================================ */
+#demo-window {
+  position: fixed;
+  top: 50%;
+  left: calc(50% + 220px);
+  transform: translateY(-50%);
+  width: 290px;
+  background: #D4D0C8;
+  border: 2px solid; border-color: #FFF #808080 #808080 #FFF;
+  box-shadow: 6px 6px 12px rgba(0,0,0,0.5);
+  z-index: 200;
+  font-size: 11px;
+}
+
+.demo-window-body { padding: 10px 12px 12px; }
+
+.demo-window-note {
+  font-size: 10px; color: #404040; margin-bottom: 8px;
+  padding: 4px 6px; background: #FFFFF0;
+  border: 1px solid #CCCC88;
+}
+
+.demo-accounts-table {
+  border-collapse: collapse; width: 100%; font-size: 11px; margin-bottom: 8px;
+}
+.demo-accounts-table th {
+  background: #E0DDD5; border: 1px solid #C0BDBA;
+  padding: 2px 6px; text-align: left; font-weight: bold; font-size: 10px;
+}
+.demo-accounts-table td {
+  border: 1px solid #D4D0C8; padding: 3px 6px; white-space: nowrap;
+}
+.demo-accounts-table tbody tr:nth-child(even) { background: #F0EEE8; }
+.demo-accounts-table tbody tr:hover { background: #CCE5FF; }
+
+.demo-user {
+  font-family: "Courier New", monospace; font-weight: bold;
+  color: #003399; cursor: pointer; text-decoration: underline;
+}
+.demo-user:hover { color: #0055CC; }
+
+.demo-window-tip {
+  font-size: 10px; color: #606060; text-align: center; margin-top: 4px;
+}
+
+/* ============================================================
    MAIN WINDOW
    ============================================================ */
 #screen-main {
@@ -111,6 +158,11 @@ body {
   font-size: 12px; padding: 1px 6px; border-radius: 1px;
 }
 .titlebar-right { font-size: 10px; color: #C8DEFF; }
+.role-badge {
+  background: rgba(255,255,255,0.2); color: #FFF;
+  font-size: 9px; padding: 1px 5px; border-radius: 2px;
+  border: 1px solid rgba(255,255,255,0.4);
+}
 
 /* Menu bar */
 .sap-menubar {

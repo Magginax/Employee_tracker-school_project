@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
   <meta charset="UTF-8">
-  <title>SAP Logon 740</title>
+  <title>ČSOB SAP</title>
   <link rel="icon" type="image/svg+xml" href="SAP-icon.svg">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -50,6 +50,52 @@
   </div>
 </div>
 
+<!-- ===== DEMO ACCOUNTS WINDOW ===== -->
+<div id="demo-window">
+  <div class="win-titlebar">
+    <span>&#128274; Demo přístupy</span>
+    <div class="win-btns">
+      <span class="win-btn" onclick="document.getElementById('demo-window').style.display='none'" title="Zavřít">&#10005;</span>
+    </div>
+  </div>
+  <div class="demo-window-body">
+    <div class="demo-window-note">Školní projekt &mdash; testovací účty:</div>
+    <table class="demo-accounts-table">
+      <thead>
+        <tr><th>Uživatel</th><th>Heslo</th><th>Role</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="demo-user" onclick="fillLogin('ADMIN','admin123')">ADMIN</span></td>
+          <td>admin123</td>
+          <td><span class="badge badge-red">Administrátor</span></td>
+        </tr>
+        <tr>
+          <td><span class="demo-user" onclick="fillLogin('NOVAK','heslo123')">NOVAK</span></td>
+          <td>heslo123</td>
+          <td><span class="badge badge-yellow">Manager</span></td>
+        </tr>
+        <tr>
+          <td><span class="demo-user" onclick="fillLogin('SVOBODOVA','heslo123')">SVOBODOVA</span></td>
+          <td>heslo123</td>
+          <td><span class="badge badge-blue">Zaměstnanec</span></td>
+        </tr>
+        <tr>
+          <td><span class="demo-user" onclick="fillLogin('DVORAK','heslo123')">DVORAK</span></td>
+          <td>heslo123</td>
+          <td><span class="badge badge-blue">Zaměstnanec</span></td>
+        </tr>
+        <tr>
+          <td><span class="demo-user" onclick="fillLogin('KREJCI','heslo123')">KREJCI</span></td>
+          <td>heslo123</td>
+          <td><span class="badge badge-blue">Zaměstnanec</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="demo-window-tip">&#9757; Kliknutím na jméno vyplníte formulář</div>
+  </div>
+</div>
+
 <!-- ===== MAIN SAP WINDOW ===== -->
 <div id="screen-main">
 
@@ -61,7 +107,8 @@
     </div>
     <div class="titlebar-right">
       <span id="current-user">ADMIN</span>
-      &nbsp;|&nbsp; Klient: 001 &nbsp;|&nbsp; CS
+      &nbsp;<span id="current-role" class="role-badge"></span>&nbsp;
+      | Klient: 001 &nbsp;|&nbsp; CS
     </div>
   </div>
 
@@ -95,7 +142,8 @@
     <div class="menu-wrap">
       <span class="menu-item" onclick="toggleMenu('m-pohled')">Pohled</span>
       <div class="menu-dropdown" id="m-pohled">
-        <div class="mdd-item" onclick="menuAction('view-emp')">&#10003; Zaměstnanci</div>
+        <div class="mdd-item" onclick="menuAction('view-pres')">&#10003; Přítomnost</div>
+        <div class="mdd-item" onclick="menuAction('view-emp')">&#160;&#160;&#160; Zaměstnanci</div>
         <div class="mdd-item" onclick="menuAction('view-ts')">&#160;&#160;&#160; Docházka</div>
         <div class="mdd-item" onclick="menuAction('view-vac')">&#160;&#160;&#160; Dovolená</div>
         <div class="mdd-item" onclick="menuAction('view-ov')">&#160;&#160;&#160; Přehledy</div>
@@ -117,6 +165,8 @@
     <div class="menu-wrap">
       <span class="menu-item" onclick="toggleMenu('m-system')">Systém</span>
       <div class="menu-dropdown" id="m-system">
+        <div class="mdd-item" onclick="menuAction('change-pass')">Změnit heslo...</div>
+        <div class="mdd-sep"></div>
         <div class="mdd-item" onclick="menuAction('sysinfo')">Informace o systému</div>
         <div class="mdd-sep"></div>
         <div class="mdd-item" onclick="menuAction('logout')">Odhlásit <span class="mdd-tcode">Shift+F3</span></div>
@@ -151,7 +201,8 @@
 
   <!-- Navigation Tabs -->
   <div class="sap-tabs">
-    <button class="sap-tab active" data-section="employees" onclick="renderSection('employees')">Zaměstnanci</button>
+    <button class="sap-tab active" data-section="presence"  onclick="renderSection('presence')">Přítomnost</button>
+    <button class="sap-tab" data-section="employees" onclick="renderSection('employees')">Zaměstnanci</button>
     <button class="sap-tab" data-section="timesheet"  onclick="renderSection('timesheet')">Docházka</button>
     <button class="sap-tab" data-section="vacation"   onclick="renderSection('vacation')">Dovolená</button>
     <button class="sap-tab" data-section="overview"   onclick="renderSection('overview')">Přehledy</button>

@@ -7,12 +7,16 @@ const DB = {
   employees: [],
   timesheet: [],
   vacation: [],
+  presence: [],
+  users: [],
   meta: { nextId: 100 },
 
   load() {
     this.employees = JSON.parse(localStorage.getItem('sap_employees') || '[]');
     this.timesheet = JSON.parse(localStorage.getItem('sap_timesheet') || '[]');
     this.vacation  = JSON.parse(localStorage.getItem('sap_vacation')  || '[]');
+    this.presence  = JSON.parse(localStorage.getItem('sap_presence')  || '[]');
+    this.users     = JSON.parse(localStorage.getItem('sap_users')     || '[]');
     this.meta      = JSON.parse(localStorage.getItem('sap_meta')      || '{"nextId":100}');
   },
 
@@ -20,6 +24,8 @@ const DB = {
     localStorage.setItem('sap_employees', JSON.stringify(this.employees));
     localStorage.setItem('sap_timesheet', JSON.stringify(this.timesheet));
     localStorage.setItem('sap_vacation',  JSON.stringify(this.vacation));
+    localStorage.setItem('sap_presence',  JSON.stringify(this.presence));
+    localStorage.setItem('sap_users',     JSON.stringify(this.users));
     localStorage.setItem('sap_meta',      JSON.stringify(this.meta));
   },
 
@@ -29,6 +35,18 @@ const DB = {
     return id;
   }
 };
+
+// ---- CURRENT USER & ROLES ----
+let currentUser = null;
+const ROLE_LABELS = { admin: 'Administrátor', manager: 'Manager', zamestnanec: 'Zaměstnanec' };
+
+function isAdmin()   { return currentUser?.role === 'admin'; }
+function isManager() { return currentUser?.role === 'manager' || currentUser?.role === 'admin'; }
+
+function canEditPresence(empId) {
+  if (isAdmin() || isManager()) return true;
+  return currentUser?.zamestnanecId === empId;
+}
 
 // ---- DEMO DATA ----
 function loadDemoData() {
@@ -63,6 +81,30 @@ function loadDemoData() {
     { id: DB.meta.nextId++, zamestnanecId: 3, od: `${y}-${m}-20`, do: `${y}-${m}-24`, typ: 'Řádná dovolená', stav: 'Čeká na schválení', poznamka: 'Dovolená u moře' },
     { id: DB.meta.nextId++, zamestnanecId: 4, od: `${y}-01-13`, do: `${y}-01-17`, typ: 'Řádná dovolená',  stav: 'Schváleno',            poznamka: '' },
     { id: DB.meta.nextId++, zamestnanecId: 5, od: `${y}-${m}-05`, do: `${y}-${m}-05`, typ: 'Osobní volno', stav: 'Schváleno',           poznamka: 'Návštěva lékaře' },
+  ];
+
+  // Users
+  DB.users = [
+    { id: 1, username: 'ADMIN',       heslo: 'admin123', zamestnanecId: null, role: 'admin' },
+    { id: 2, username: 'NOVAK',       heslo: 'heslo123', zamestnanecId: 1,    role: 'manager' },
+    { id: 3, username: 'SVOBODOVA',   heslo: 'heslo123', zamestnanecId: 2,    role: 'zamestnanec' },
+    { id: 4, username: 'DVORAK',      heslo: 'heslo123', zamestnanecId: 3,    role: 'zamestnanec' },
+    { id: 5, username: 'PROCHAZKOVA', heslo: 'heslo123', zamestnanecId: 4,    role: 'zamestnanec' },
+    { id: 6, username: 'KREJCI',      heslo: 'heslo123', zamestnanecId: 5,    role: 'zamestnanec' },
+  ];
+
+  // Presence – demo entries for today and yesterday
+  const today     = new Date().toISOString().slice(0, 10);
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  DB.presence = [
+    { id: DB.meta.nextId++, zamestnanecId: 1, datum: today,     stav: 'V kanceláři', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 2, datum: today,     stav: 'Home office', poznamka: 'Dopoledne online' },
+    { id: DB.meta.nextId++, zamestnanecId: 3, datum: today,     stav: 'Dovolená',    poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 5, datum: today,     stav: 'Home office', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 1, datum: yesterday, stav: 'V kanceláři', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 2, datum: yesterday, stav: 'V kanceláři', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 3, datum: yesterday, stav: 'Jiný důvod',  poznamka: 'Pracovní cesta' },
+    { id: DB.meta.nextId++, zamestnanecId: 4, datum: yesterday, stav: 'Žádná směna', poznamka: '' },
   ];
 
   DB.save();
@@ -113,28 +155,45 @@ function updateClock() {
 }
 
 // ---- LOGIN ----
+function fillLogin(user, pass) {
+  document.getElementById('login-user').value = user;
+  document.getElementById('login-pass').value = pass;
+  document.getElementById('login-pass').focus();
+}
+
 function doLogin() {
-  const user = document.getElementById('login-user').value.trim();
+  const user = document.getElementById('login-user').value.trim().toUpperCase();
   const pass = document.getElementById('login-pass').value;
   const err  = document.getElementById('login-error');
   if (!user) { err.textContent = 'Zadejte uživatelské jméno.'; return; }
   if (!pass) { err.textContent = 'Zadejte heslo.'; return; }
+
+  const account = DB.users.find(u => u.username === user && u.heslo === pass);
+  if (!account) { err.textContent = 'Nesprávné přihlašovací údaje.'; return; }
+
   err.textContent = '';
+  currentUser = account;
   document.getElementById('screen-login').style.display = 'none';
   document.getElementById('screen-main').classList.add('visible');
-  document.getElementById('current-user').textContent = user.toUpperCase();
-  renderSection('employees');
-  showStatus(`Uživatel ${user.toUpperCase()} přihlášen.`, 'ok');
+  const dw = document.getElementById('demo-window');
+  if (dw) dw.style.display = 'none';
+  document.getElementById('current-user').textContent = user;
+  document.getElementById('current-role').textContent = ROLE_LABELS[account.role];
+  renderSection('presence');
+  showStatus(`Uživatel ${user} přihlášen (${ROLE_LABELS[account.role]}).`, 'ok');
 }
 
 function doLogout() {
   if (!confirm('Opravdu se chcete odhlásit?')) return;
+  currentUser = null;
   document.getElementById('screen-main').classList.remove('visible');
   document.getElementById('screen-login').style.display = '';
   document.getElementById('login-pass').value = '';
+  const dw = document.getElementById('demo-window');
+  if (dw) dw.style.display = '';
 }
 
-// ---- LOGOUT (updated with keyboard shortcut) ----
+// ---- LOGOUT (keyboard shortcut) ----
 document.addEventListener('keydown', e => {
   if (e.shiftKey && e.key === 'F3') doLogout();
 });
@@ -144,6 +203,7 @@ const TCODES = {
   PA10: 'employees', PA20: 'employees', PA30: 'employees', PA40: 'employees',
   PT10: 'timesheet', PT40: 'timesheet',
   PT50: 'vacation',  PT60: 'vacation',
+  PP10: 'presence',  PP20: 'presence',
   S001: 'overview',
 };
 const EASTER_TCODES = { 'KAFE': () => triggerKafe(), 'DOKTOR': () => triggerDoktor() };
@@ -157,13 +217,14 @@ function runTCode() {
 }
 
 // ---- NAVIGATION ----
-let currentSection = 'employees';
+let currentSection = 'presence';
 
 function renderSection(section) {
   currentSection = section;
   document.querySelectorAll('.sap-tab').forEach(t => t.classList.toggle('active', t.dataset.section === section));
   const ca = document.getElementById('content-area');
   switch (section) {
+    case 'presence':  ca.innerHTML = buildPresence();  break;
     case 'employees': ca.innerHTML = buildEmployees(); break;
     case 'timesheet': ca.innerHTML = buildTimesheet(); break;
     case 'vacation':  ca.innerHTML = buildVacation();  break;
@@ -171,18 +232,209 @@ function renderSection(section) {
   }
   updateHelpCtx(section);
   // Update pohled checkmarks
-  ['view-emp','view-ts','view-vac','view-ov'].forEach((a,i) => {
-    const sec = ['employees','timesheet','vacation','overview'][i];
+  ['view-pres','view-emp','view-ts','view-vac','view-ov'].forEach((a,i) => {
+    const sec = ['presence','employees','timesheet','vacation','overview'][i];
     const el = document.querySelector(`[onclick="menuAction('${a}')"]`);
-    if (el) el.textContent = (sec === section ? '&#10003; ' : '\u00A0\u00A0\u00A0 ') + el.textContent.replace(/^[✓\s]+/,'');
+    if (el) el.textContent = (sec === section ? '\u2713 ' : '\u00A0\u00A0\u00A0 ') + el.textContent.replace(/^[\u2713\s]+/,'');
   });
+}
+
+// ============================================================
+// SECTION: PŘÍTOMNOST
+// ============================================================
+let presF = {};
+
+const STAV_PRES = ['V kanceláři', 'Home office', 'Dovolená', 'Žádná směna', 'Jiný důvod'];
+const STAV_PRES_BADGE = {
+  'V kanceláři': 'badge-green',
+  'Home office': 'badge-blue',
+  'Dovolená':    'badge-yellow',
+  'Žádná směna': 'badge-grey',
+  'Jiný důvod':  'badge-red',
+};
+
+function buildPresence() {
+  const today = new Date().toISOString().slice(0, 10);
+  if (!presF.datum) presF.datum = today;
+
+  const dayName = new Date(presF.datum + 'T12:00:00').toLocaleDateString('cs-CZ', { weekday: 'long' });
+  const displayDate = fmtDate(presF.datum);
+
+  // Index entries for selected date by employee
+  const dateEntries = DB.presence.filter(p => p.datum === presF.datum);
+  const byEmp = {};
+  dateEntries.forEach(p => { byEmp[p.zamestnanecId] = p; });
+
+  // Apply filters
+  let employees = [...DB.employees];
+  if (presF.empId) employees = employees.filter(e => e.id === parseInt(presF.empId));
+  if (presF.stav) {
+    if (presF.stav === 'Nezadáno') {
+      employees = employees.filter(e => !byEmp[e.id]);
+    } else {
+      employees = employees.filter(e => byEmp[e.id]?.stav === presF.stav);
+    }
+  }
+
+  // Stats across all employees (unfiltered)
+  const counts = {};
+  STAV_PRES.forEach(s => { counts[s] = 0; });
+  counts['Nezadáno'] = 0;
+  DB.employees.forEach(e => {
+    const entry = byEmp[e.id];
+    if (entry) counts[entry.stav] = (counts[entry.stav] || 0) + 1;
+    else counts['Nezadáno']++;
+  });
+
+  const statsBadges = [...STAV_PRES, 'Nezadáno'].map(s => {
+    const n = counts[s] || 0;
+    if (n === 0) return '';
+    const badgeCls = STAV_PRES_BADGE[s] || 'badge-grey';
+    const active = presF.stav === s ? 'style="outline:2px solid #000;"' : '';
+    return `<span class="badge ${badgeCls}" ${active} style="margin-right:4px;cursor:pointer;${presF.stav===s?'outline:2px solid #000;':''}" onclick="presF.stav=presF.stav==='${s}'?'':'${s}';renderSection('presence')" title="Filtrovat: ${s}">${s}: ${n}</span>`;
+  }).join('');
+
+  const stavOpts = ['', ...STAV_PRES, 'Nezadáno'].map(s =>
+    `<option value="${s}" ${presF.stav === s ? 'selected' : ''}>${s || '– Všechny –'}</option>`
+  ).join('');
+
+  const prevDate = new Date(presF.datum + 'T12:00:00');
+  prevDate.setDate(prevDate.getDate() - 1);
+  const nextDate = new Date(presF.datum + 'T12:00:00');
+  nextDate.setDate(nextDate.getDate() + 1);
+  const prevStr = prevDate.toISOString().slice(0, 10);
+  const nextStr = nextDate.toISOString().slice(0, 10);
+
+  const rows = employees.map(e => {
+    const entry = byEmp[e.id];
+    const stavHtml = entry
+      ? `<span class="badge ${STAV_PRES_BADGE[entry.stav] || 'badge-grey'}">${entry.stav}</span>`
+      : `<span style="color:#808080;font-style:italic">Nezadáno</span>`;
+    const note = entry?.poznamka || '';
+
+    let actionBtn = '';
+    if (canEditPresence(e.id)) {
+      if (entry) {
+        actionBtn = `<button class="action-link" onclick="editPresence(${entry.id})">Změnit</button>
+          &nbsp;|&nbsp;
+          <button class="action-link danger" onclick="delPresence(${entry.id})">Smazat</button>`;
+      } else {
+        actionBtn = `<button class="action-link" onclick="newPresence(${e.id},'${presF.datum}')">Nastavit</button>`;
+      }
+    }
+
+    return `
+      <tr>
+        <td>${e.osobniCislo}</td>
+        <td>${e.prijmeni} ${e.jmeno}</td>
+        <td>${e.oddeleni}</td>
+        <td>${stavHtml}</td>
+        <td>${note}</td>
+        <td>${actionBtn}</td>
+      </tr>`;
+  }).join('') || `<tr><td colspan="6" class="no-data">Žádní zaměstnanci pro zvolené filtry.</td></tr>`;
+
+  return `
+    <div class="section-header">
+      <span>Přítomnost zaměstnanců &nbsp;–&nbsp; ${dayName} ${displayDate}</span>
+      <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">${statsBadges}</div>
+    </div>
+    <div class="filter-bar">
+      <label>Datum:</label>
+      <button class="sap-btn" onclick="presF.datum='${prevStr}';renderSection('presence')" title="Předchozí den">&#9664;</button>
+      <input type="date" class="sap-select" value="${presF.datum}" onchange="presF.datum=this.value;renderSection('presence')" style="width:130px">
+      <button class="sap-btn" onclick="presF.datum='${nextStr}';renderSection('presence')" title="Další den">&#9654;</button>
+      <button class="sap-btn" onclick="presF.datum='${today}';renderSection('presence')">Dnes</button>
+      <div class="toolbar-sep"></div>
+      <label>Zaměstnanec:</label>
+      <select class="sap-select" style="width:210px" onchange="presF.empId=this.value;renderSection('presence')">
+        <option value="">– Všichni –</option>${empOptions(presF.empId ? parseInt(presF.empId) : null)}
+      </select>
+      <label>Stav:</label>
+      <select class="sap-select" style="width:130px" onchange="presF.stav=this.value;renderSection('presence')">${stavOpts}</select>
+      <button class="sap-btn" onclick="presF={};renderSection('presence')">Obnovit</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="alv-table">
+        <thead><tr>
+          <th>Osobní č.</th><th>Zaměstnanec</th><th>Oddělení</th>
+          <th>Stav</th><th>Poznámka</th><th>Akce</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+function presenceForm(p = {}, lockedEmpId = null) {
+  const stavOpts = STAV_PRES.map(s =>
+    `<option value="${s}" ${s === (p.stav || 'V kanceláři') ? 'selected' : ''}>${s}</option>`
+  ).join('');
+  const empField = lockedEmpId !== null
+    ? `<input type="hidden" id="f-zam" value="${lockedEmpId}"><strong>${empName(lockedEmpId)}</strong>`
+    : `<select id="f-zam" style="width:260px"><option value="">– vyberte –</option>${empOptions(p.zamestnanecId)}</select>`;
+  return `
+    <table class="form-table">
+      <tr><td><span class="req">*</span> Zaměstnanec:</td><td>${empField}</td></tr>
+      <tr><td><span class="req">*</span> Datum:</td>      <td><input type="date" id="f-datum" value="${p.datum || ''}"></td></tr>
+      <tr><td><span class="req">*</span> Stav:</td>       <td><select id="f-stav" style="width:200px">${stavOpts}</select></td></tr>
+      <tr><td>Poznámka:</td>                              <td><input type="text" id="f-poz" value="${p.poznamka || ''}" style="width:260px" maxlength="120"></td></tr>
+    </table>
+    <p class="form-note"><span class="req">*</span> Povinné pole</p>`;
+}
+
+function collectPresenceForm() {
+  const zamId = parseInt(document.getElementById('f-zam').value);
+  const datum = document.getElementById('f-datum').value;
+  const stav  = document.getElementById('f-stav').value;
+  if (!zamId || !datum || !stav) { alert('Vyplňte všechna povinná pole.'); return null; }
+  return { zamestnanecId: zamId, datum, stav, poznamka: document.getElementById('f-poz').value.trim() };
+}
+
+function newPresence(empId, datum) {
+  const existing = DB.presence.find(p => p.zamestnanecId === empId && p.datum === datum);
+  if (existing) { editPresence(existing.id); return; }
+  const lockedEmpId = (isAdmin() || isManager()) ? null : empId;
+  showModal('Nastavit stav přítomnosti (PP10)', presenceForm({ datum }, lockedEmpId), () => {
+    const d = collectPresenceForm(); if (!d) return false;
+    // Upsert: prevent duplicate for same employee+date
+    const dup = DB.presence.find(p => p.zamestnanecId === d.zamestnanecId && p.datum === d.datum);
+    if (dup) { Object.assign(dup, d); DB.save(); }
+    else { d.id = DB.nextId(); DB.presence.push(d); DB.save(); }
+    renderSection('presence');
+    showStatus('Stav přítomnosti nastaven.');
+    return true;
+  });
+}
+
+function editPresence(id) {
+  const p = DB.presence.find(x => x.id === id); if (!p) return;
+  const lockedEmpId = (isAdmin() || isManager()) ? null : p.zamestnanecId;
+  showModal('Změnit stav přítomnosti (PP10)', presenceForm(p, lockedEmpId), () => {
+    const d = collectPresenceForm(); if (!d) return false;
+    Object.assign(p, d); DB.save();
+    renderSection('presence');
+    showStatus('Stav přítomnosti aktualizován.');
+    return true;
+  });
+}
+
+function delPresence(id) {
+  if (!confirm('Smazat tento záznam přítomnosti?')) return;
+  DB.presence = DB.presence.filter(x => x.id !== id);
+  DB.save(); renderSection('presence'); showStatus('Záznam smazán.');
 }
 
 // ============================================================
 // SECTION: ZAMĚSTNANCI
 // ============================================================
 function buildEmployees() {
-  const rows = DB.employees.map(e => `
+  const rows = DB.employees.map(e => {
+    const actions = isAdmin()
+      ? `<button class="action-link" onclick="editEmployee(${e.id})">Upravit</button>
+         &nbsp;|&nbsp;
+         <button class="action-link danger" onclick="delEmployee(${e.id})">Smazat</button>`
+      : `<span style="color:#808080;font-style:italic">jen čtení</span>`;
+    return `
     <tr>
       <td><input type="checkbox" class="row-cb" data-id="${e.id}"></td>
       <td>${e.osobniCislo}</td>
@@ -192,20 +444,19 @@ function buildEmployees() {
       <td>${e.pozice}</td>
       <td>${fmtDate(e.datNastupu)}</td>
       <td>${e.email || ''}</td>
-      <td>
-        <button class="action-link" onclick="editEmployee(${e.id})">Upravit</button>
-        &nbsp;|&nbsp;
-        <button class="action-link danger" onclick="delEmployee(${e.id})">Smazat</button>
-      </td>
-    </tr>`).join('') || `<tr><td colspan="9" class="no-data">Žádní zaměstnanci. Přidejte prvního zaměstnance tlačítkem výše.</td></tr>`;
+      <td>${actions}</td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="9" class="no-data">Žádní zaměstnanci. Přidejte prvního zaměstnance tlačítkem výše.</td></tr>`;
+
+  const adminBtns = isAdmin() ? `
+    <button class="sap-btn primary" onclick="newEmployee()">&#10010; Nový zaměstnanec</button>
+    <button class="sap-btn danger"  onclick="delSelected()">&#10008; Smazat označené</button>
+  ` : '';
 
   return `
     <div class="section-header">
       <span>Správa zaměstnanců &nbsp;–&nbsp; Celkem: ${DB.employees.length}</span>
-      <div class="section-header-btns">
-        <button class="sap-btn primary" onclick="newEmployee()">&#10010; Nový zaměstnanec</button>
-        <button class="sap-btn danger"  onclick="delSelected()">&#10008; Smazat označené</button>
-      </div>
+      <div class="section-header-btns">${adminBtns}</div>
     </div>
     <div style="overflow-x:auto">
       <table class="alv-table">
@@ -246,6 +497,7 @@ function collectEmpForm() {
 }
 
 function newEmployee() {
+  if (!isAdmin()) { showStatus('Nemáte oprávnění přidávat zaměstnance.', 'error'); return; }
   showModal('Nový zaměstnanec (PA40)', empForm(), () => {
     const d = collectEmpForm(); if (!d) return false;
     d.id = DB.nextId();
@@ -258,6 +510,7 @@ function newEmployee() {
 }
 
 function editEmployee(id) {
+  if (!isAdmin()) { showStatus('Nemáte oprávnění upravovat zaměstnance.', 'error'); return; }
   const e = DB.employees.find(x => x.id === id); if (!e) return;
   showModal(`Změnit zaměstnance (PA30) – ${e.osobniCislo}`, empForm(e), () => {
     const d = collectEmpForm(); if (!d) return false;
@@ -269,16 +522,19 @@ function editEmployee(id) {
 }
 
 function delEmployee(id) {
+  if (!isAdmin()) { showStatus('Nemáte oprávnění mazat zaměstnance.', 'error'); return; }
   const e = DB.employees.find(x => x.id === id); if (!e) return;
-  if (!confirm(`Smazat zaměstnance ${e.prijmeni} ${e.jmeno}?\nBudou smazány i jeho záznamy docházky a dovolené.`)) return;
+  if (!confirm(`Smazat zaměstnance ${e.prijmeni} ${e.jmeno}?\nBudou smazány i jeho záznamy docházky, dovolené a přítomnosti.`)) return;
   DB.employees = DB.employees.filter(x => x.id !== id);
   DB.timesheet  = DB.timesheet.filter(x => x.zamestnanecId !== id);
   DB.vacation   = DB.vacation.filter(x => x.zamestnanecId !== id);
+  DB.presence   = DB.presence.filter(x => x.zamestnanecId !== id);
   DB.save(); renderSection('employees');
   showStatus('Zaměstnanec byl smazán.');
 }
 
 function delSelected() {
+  if (!isAdmin()) { showStatus('Nemáte oprávnění mazat zaměstnance.', 'error'); return; }
   const ids = [...document.querySelectorAll('.row-cb:checked')].map(cb => parseInt(cb.dataset.id));
   if (!ids.length) { alert('Nejprve označte záznamy.'); return; }
   if (!confirm(`Smazat ${ids.length} označených zaměstnanců?`)) return;
@@ -286,6 +542,7 @@ function delSelected() {
     DB.employees = DB.employees.filter(x => x.id !== id);
     DB.timesheet  = DB.timesheet.filter(x => x.zamestnanecId !== id);
     DB.vacation   = DB.vacation.filter(x => x.zamestnanecId !== id);
+    DB.presence   = DB.presence.filter(x => x.zamestnanecId !== id);
   });
   DB.save(); renderSection('employees');
   showStatus(`${ids.length} zaměstnanců smazáno.`);
@@ -431,7 +688,7 @@ function buildVacation() {
 
   const rows = entries.map(v => {
     const days = workdays(v.od, v.do);
-    const approve = v.stav === 'Čeká na schválení'
+    const approve = isManager() && v.stav === 'Čeká na schválení'
       ? `<button class="action-link" style="color:#005500" onclick="approveVac(${v.id},'Schváleno')">Schválit</button>
          &nbsp;|&nbsp;
          <button class="action-link danger" onclick="approveVac(${v.id},'Zamítnuto')">Zamítnout</button>
@@ -576,6 +833,7 @@ function delVac(id) {
 }
 
 function approveVac(id, stav) {
+  if (!isManager()) { showStatus('Nemáte oprávnění schvalovat dovolené.', 'error'); return; }
   const v = DB.vacation.find(x => x.id === id); if (!v) return;
   v.stav = stav; DB.save();
   renderSection(currentSection);
@@ -625,9 +883,9 @@ function buildOverview() {
       <td>${fmtDate(v.od)}</td><td>${fmtDate(v.do)}</td>
       <td style="text-align:right">${workdays(v.od,v.do)}</td>
       <td>
-        <button class="action-link" style="color:#005500" onclick="approveVac(${v.id},'Schváleno')">Schválit</button>
+        ${isManager() ? `<button class="action-link" style="color:#005500" onclick="approveVac(${v.id},'Schváleno')">Schválit</button>
         &nbsp;|&nbsp;
-        <button class="action-link danger" onclick="approveVac(${v.id},'Zamítnuto')">Zamítnout</button>
+        <button class="action-link danger" onclick="approveVac(${v.id},'Zamítnuto')">Zamítnout</button>` : '<span style="color:#808080">—</span>'}
       </td>
     </tr>`).join('') || `<tr><td colspan="5" class="no-data">Žádné čekající žádosti.</td></tr>`;
 
@@ -665,6 +923,33 @@ function buildOverview() {
 }
 
 // ============================================================
+// ZMĚNA HESLA
+// ============================================================
+function changePassword() {
+  if (!currentUser) return;
+  showModal('Změnit heslo', `
+    <table class="form-table">
+      <tr><td><span class="req">*</span> Stávající heslo:</td><td><input type="password" id="cp-old" style="width:220px" autocomplete="current-password"></td></tr>
+      <tr><td><span class="req">*</span> Nové heslo:</td>     <td><input type="password" id="cp-new" style="width:220px" autocomplete="new-password"></td></tr>
+      <tr><td><span class="req">*</span> Potvrdit heslo:</td> <td><input type="password" id="cp-con" style="width:220px" autocomplete="new-password"></td></tr>
+    </table>
+    <p class="form-note"><span class="req">*</span> Povinné pole &nbsp;|&nbsp; Heslo musí mít alespoň 6 znaků.</p>
+  `, () => {
+    const old  = document.getElementById('cp-old').value;
+    const newP = document.getElementById('cp-new').value;
+    const con  = document.getElementById('cp-con').value;
+    if (!old || !newP || !con) { alert('Vyplňte všechna pole.'); return false; }
+    if (old !== currentUser.heslo) { alert('Stávající heslo není správné.'); return false; }
+    if (newP.length < 6) { alert('Nové heslo musí mít alespoň 6 znaků.'); return false; }
+    if (newP !== con) { alert('Nová hesla se neshodují.'); return false; }
+    currentUser.heslo = newP;
+    DB.save();
+    showStatus('Heslo bylo úspěšně změněno.');
+    return true;
+  });
+}
+
+// ============================================================
 // MODAL
 // ============================================================
 let _modalCb = null;
@@ -674,7 +959,10 @@ function showModal(title, html, onSave) {
   document.getElementById('modal-content').innerHTML = html;
   _modalCb = onSave;
   document.getElementById('modal-overlay').classList.add('visible');
+  // Restore save button visibility
   setTimeout(() => {
+    const btn = document.getElementById('modal-save-btn');
+    if (btn) btn.style.display = '';
     const first = document.querySelector('#modal-content input:not([type=hidden]), #modal-content select');
     if (first) first.focus();
   }, 50);
@@ -717,16 +1005,18 @@ function menuAction(action) {
     case 'pt50': renderSection('vacation');  setTimeout(newVac, 50); break;
     case 'pt60': renderSection('vacation');  break;
     // Pohled
-    case 'view-emp': renderSection('employees'); break;
-    case 'view-ts':  renderSection('timesheet'); break;
-    case 'view-vac': renderSection('vacation');  break;
-    case 'view-ov':  renderSection('overview');  break;
-    case 'refresh':  renderSection(currentSection); showStatus('Obrazovka obnovena.'); break;
+    case 'view-pres': renderSection('presence');  break;
+    case 'view-emp':  renderSection('employees'); break;
+    case 'view-ts':   renderSection('timesheet'); break;
+    case 'view-vac':  renderSection('vacation');  break;
+    case 'view-ov':   renderSection('overview');  break;
+    case 'refresh':   renderSection(currentSection); showStatus('Obrazovka obnovena.'); break;
     // Nástroje
     case 'export':     exportData(); break;
     case 'load-demo':  reloadDemo(); break;
     case 'clear-data': clearAllData(); break;
     // Systém
+    case 'change-pass': changePassword(); break;
     case 'sysinfo': showSysInfo(); break;
     case 'logout':  doLogout(); break;
     // Nápověda
@@ -740,7 +1030,7 @@ function menuAction(action) {
 // TOOLS: EXPORT / IMPORT / CLEAR
 // ============================================================
 function exportData() {
-  const data = { employees: DB.employees, timesheet: DB.timesheet, vacation: DB.vacation, exportedAt: new Date().toISOString() };
+  const data = { employees: DB.employees, timesheet: DB.timesheet, vacation: DB.vacation, presence: DB.presence, exportedAt: new Date().toISOString() };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
@@ -753,7 +1043,7 @@ function exportData() {
 
 function reloadDemo() {
   if (!confirm('Přepsat stávající data vzorovými daty?\nVšechna aktuální data budou ztracena.')) return;
-  DB.employees = []; DB.timesheet = []; DB.vacation = []; DB.meta.nextId = 100;
+  DB.employees = []; DB.timesheet = []; DB.vacation = []; DB.presence = []; DB.meta.nextId = 100;
   loadDemoData();
   renderSection(currentSection);
   showStatus('Vzorová data načtena.');
@@ -761,7 +1051,7 @@ function reloadDemo() {
 
 function clearAllData() {
   if (!confirm('POZOR: Opravdu smazat VŠECHNA data?\nTuto akci nelze vrátit zpět.')) return;
-  DB.employees = []; DB.timesheet = []; DB.vacation = []; DB.meta.nextId = 100;
+  DB.employees = []; DB.timesheet = []; DB.vacation = []; DB.presence = []; DB.meta.nextId = 100;
   DB.save();
   renderSection(currentSection);
   showStatus('Všechna data byla smazána.', 'warn');
@@ -774,13 +1064,15 @@ function showSysInfo() {
   const rows = [
     ['Systém', 'HR-PROD'],
     ['Server', 'SAPHR01'],
-    ['Verze aplikace', '1.0.0'],
+    ['Verze aplikace', '1.1.0'],
     ['Klient', '001'],
     ['Jazyk', 'CS'],
-    ['Přihlášený uživatel', document.getElementById('current-user')?.textContent || 'ADMIN'],
+    ['Přihlášený uživatel', currentUser?.username || '—'],
+    ['Role', ROLE_LABELS[currentUser?.role] || '—'],
     ['Zaměstnanců v DB', DB.employees.length],
     ['Záznamů docházky', DB.timesheet.length],
     ['Záznamů dovolené', DB.vacation.length],
+    ['Záznamů přítomnosti', DB.presence.length],
     ['Úložiště', 'localStorage (prohlížeč)'],
     ['Datum / čas', new Date().toLocaleString('cs-CZ')],
   ];
@@ -789,7 +1081,6 @@ function showSysInfo() {
       ${rows.map(([k,v]) => `<tr><td>${k}:</td><td><strong>${v}</strong></td></tr>`).join('')}
     </table>`;
   showModal('Informace o systému', html, () => true);
-  // Hide save button for info-only modals
   setTimeout(() => { const btn = document.getElementById('modal-save-btn'); if (btn) btn.style.display = 'none'; }, 0);
 }
 
@@ -813,6 +1104,7 @@ function showHelpModal(type) {
       <div class="help-modal-section">
         <h4>Transakční pole (toolbar)</h4>
         <table class="help-modal-table">
+          <tr><td>PP10 / PP20</td>  <td>Nastavit / zobrazit přítomnost</td></tr>
           <tr><td>PA20 / PA30</td>  <td>Zobrazit / změnit zaměstnance</td></tr>
           <tr><td>PA40</td>         <td>Nástup nového zaměstnance</td></tr>
           <tr><td>PT10</td>         <td>Nový záznam docházky</td></tr>
@@ -825,6 +1117,13 @@ function showHelpModal(type) {
   } else if (type === 'tcodes') {
     title = 'Kódy transakcí (T-kódy)';
     html = `
+      <div class="help-modal-section">
+        <h4>Přítomnost (PP)</h4>
+        <table class="help-modal-table">
+          <tr><td>PP10</td><td>Nastavit stav přítomnosti</td></tr>
+          <tr><td>PP20</td><td>Přehled přítomnosti</td></tr>
+        </table>
+      </div>
       <div class="help-modal-section">
         <h4>Správa zaměstnanců (PA)</h4>
         <table class="help-modal-table">
@@ -855,23 +1154,32 @@ function showHelpModal(type) {
       <div style="text-align:center;margin-bottom:14px;">
         <div class="sap-logo-text" style="font-size:24px;padding:6px 16px">SAP</div>
         <div style="margin-top:8px;font-size:13px;font-weight:bold;color:#003399">Evidence zaměstnanců — HR modul</div>
-        <div style="margin-top:4px;font-size:10px;color:#606060">Verze 1.0.0 &nbsp;|&nbsp; Klient 001 &nbsp;|&nbsp; Jazyk CS</div>
+        <div style="margin-top:4px;font-size:10px;color:#606060">Verze 1.1.0 &nbsp;|&nbsp; Klient 001 &nbsp;|&nbsp; Jazyk CS</div>
       </div>
       <div class="help-modal-section">
         <h4>Popis</h4>
         <p style="font-size:11px;line-height:1.6">
-          Webová aplikace pro evidenci zaměstnanců inspirovaná rozhraním SAP GUI 7.x.<br>
-          Umožňuje správu zaměstnanců, evidenci pracovní doby a evidenci dovolené.<br>
+          Personální aplikace umožňující zaměstnancům oznamovat svou přítomnost.<br>
+          Zaměstnanec může nastavit stav pro budoucí den (V kanceláři, Home office, Dovolená atd.).<br>
           Data jsou ukládána lokálně v prohlížeči (localStorage).
         </p>
       </div>
       <div class="help-modal-section">
         <h4>Moduly</h4>
         <table class="help-modal-table">
+          <tr><td>PP – Přítomnost</td> <td>Denní stavy zaměstnanců, home office, absence</td></tr>
           <tr><td>PA – Zaměstnanci</td><td>CRUD evidence, osobní údaje, oddělení</td></tr>
           <tr><td>PT – Docházka</td>   <td>Zápis hodin, typy absencí, měsíční přehledy</td></tr>
           <tr><td>PT – Dovolená</td>   <td>Žádosti, schvalování, bilance 20 dní/rok</td></tr>
           <tr><td>S – Přehledy</td>    <td>Statistiky, grafy, čekající žádosti</td></tr>
+        </table>
+      </div>
+      <div class="help-modal-section">
+        <h4>Role v systému</h4>
+        <table class="help-modal-table">
+          <tr><td>Administrátor</td><td>Plný přístup, správa zaměstnanců</td></tr>
+          <tr><td>Manager</td>      <td>Schvalování dovolených, nastavení stavu za kohokoliv</td></tr>
+          <tr><td>Zaměstnanec</td>  <td>Nastavení vlastního denního stavu, změna hesla</td></tr>
         </table>
       </div>
       <p style="margin-top:10px;font-size:10px;color:#606060;text-align:center">Podnikové informační systémy &nbsp;|&nbsp; PEF</p>`;
@@ -884,10 +1192,16 @@ function showHelpModal(type) {
 // HELP BOX (floating panel)
 // ============================================================
 const HELP_CTX = {
+  presence: [
+    'Zobrazuje přítomnost zaměstnanců pro vybraný den.',
+    'Klikněte "Nastavit" pro zadání vlastního stavu.',
+    'Přepínejte dny šipkami ◀ ▶ nebo výběrem datumu.',
+    'Manažeři mohou nastavit stav za jakéhokoliv zaměstnance.',
+  ],
   employees: [
     '"Nový zaměstnanec" nebo T-kód PA40 pro přijetí pracovníka.',
-    'Klikněte "Upravit" pro změnu kmenových dat.',
-    'Označte více řádků a smažte hromadně.',
+    'Klikněte "Upravit" pro změnu kmenových dat (pouze admin).',
+    'Označte více řádků a smažte hromadně (pouze admin).',
     'Osobní číslo (EMP…) se generuje automaticky.',
   ],
   timesheet: [
@@ -899,7 +1213,7 @@ const HELP_CTX = {
   vacation: [
     'Nárok na řádnou dovolenou je 20 dní/rok.',
     'Počet pracovních dní se počítá automaticky.',
-    'Stavy: Čeká → Schváleno / Zamítnuto.',
+    'Manažeři mohou schvalovat/zamítat žádosti.',
     'Bilance na konci stránky ukazuje využití.',
   ],
   overview: [
@@ -914,8 +1228,9 @@ function updateHelpCtx(section) {
   const el = document.getElementById('help-ctx');
   if (!el) return;
   const tips = HELP_CTX[section] || [];
+  const titles = { presence:'Přítomnost', employees:'Zaměstnanci', timesheet:'Docházka', vacation:'Dovolená', overview:'Přehledy' };
   el.innerHTML = `
-    <div class="help-section-title">${{ employees:'Zaměstnanci', timesheet:'Docházka', vacation:'Dovolená', overview:'Přehledy' }[section] || 'Nápověda'}</div>
+    <div class="help-section-title">${titles[section] || 'Nápověda'}</div>
     ${tips.map(t => `<div class="help-ctx-tip">${t}</div>`).join('')}`;
 }
 
@@ -1025,8 +1340,8 @@ function triggerKafe() {
       const el = document.getElementById('kafe-cd');
       if (!el) { clearInterval(tid); return; }
       rem--;
-      const m = Math.floor(rem / 60), s = rem % 60;
-      el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      const mm = Math.floor(rem / 60), s = rem % 60;
+      el.textContent = `${String(mm).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
       if (rem <= 60) el.style.color = '#AA0000';
       if (rem <= 0) { clearInterval(tid); el.textContent = 'VYPRŠELA'; }
     }, 1000);
@@ -1035,7 +1350,7 @@ function triggerKafe() {
 
 // --- 3. T-kód DOKTOR → Diagnostická zpráva ---
 function triggerDoktor() {
-  const user    = document.getElementById('current-user')?.textContent || 'ADMIN';
+  const user    = currentUser?.username || 'ADMIN';
   const tsCount = DB.timesheet.length;
   const pending = DB.vacation.filter(v => v.stav === 'Čeká na schválení').length;
   const html = `
@@ -1180,7 +1495,7 @@ function triggerBsod() {
 // ============================================================
 window.addEventListener('DOMContentLoaded', () => {
   DB.load();
-  if (DB.employees.length === 0) loadDemoData();
+  if (DB.employees.length === 0 || DB.users.length === 0) loadDemoData();
 
   // Clock
   updateClock();
