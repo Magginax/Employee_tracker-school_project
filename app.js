@@ -54,11 +54,21 @@ function loadDemoData() {
   const m = String(new Date().getMonth() + 1).padStart(2, '0');
 
   DB.employees = [
-    { id: 1, osobniCislo: 'EMP001', prijmeni: 'Novák',       jmeno: 'Jan',   datNarozeni: '1985-03-15', oddeleni: 'Informační technologie', pozice: 'Senior programátor',  datNastupu: '2018-01-15', email: 'j.novak@firma.cz',        telefon: '+420 601 234 567' },
-    { id: 2, osobniCislo: 'EMP002', prijmeni: 'Svobodová',   jmeno: 'Marie', datNarozeni: '1990-07-22', oddeleni: 'Lidské zdroje',          pozice: 'Personalistka',        datNastupu: '2019-06-01', email: 'm.svobodova@firma.cz',    telefon: '+420 602 345 678' },
-    { id: 3, osobniCislo: 'EMP003', prijmeni: 'Dvořák',      jmeno: 'Petr',  datNarozeni: '1982-11-08', oddeleni: 'Obchodní oddělení',      pozice: 'Obchodní zástupce',    datNastupu: '2015-09-01', email: 'p.dvorak@firma.cz',       telefon: '+420 603 456 789' },
-    { id: 4, osobniCislo: 'EMP004', prijmeni: 'Procházková', jmeno: 'Jana',  datNarozeni: '1995-02-14', oddeleni: 'Účetnictví',             pozice: 'Účetní',               datNastupu: '2021-03-15', email: 'j.prochazkova@firma.cz',  telefon: '+420 604 567 890' },
-    { id: 5, osobniCislo: 'EMP005', prijmeni: 'Krejčí',      jmeno: 'Tomáš', datNarozeni: '1988-05-30', oddeleni: 'Informační technologie', pozice: 'Správce sítě',         datNastupu: '2017-11-01', email: 't.krejci@firma.cz',       telefon: '+420 605 678 901' },
+    { id: 1,  osobniCislo: 'EMP001', prijmeni: 'Novák',       jmeno: 'Jan',      datNarozeni: '1985-03-15', oddeleni: 'Informační technologie', pozice: 'Senior programátor',    datNastupu: '2018-01-15', email: 'j.novak@csob.cz',          telefon: '+420 601 234 567' },
+    { id: 2,  osobniCislo: 'EMP002', prijmeni: 'Svobodová',   jmeno: 'Marie',    datNarozeni: '1990-07-22', oddeleni: 'Lidské zdroje',          pozice: 'Personalistka',          datNastupu: '2019-06-01', email: 'm.svobodova@csob.cz',      telefon: '+420 602 345 678' },
+    { id: 3,  osobniCislo: 'EMP003', prijmeni: 'Dvořák',      jmeno: 'Petr',     datNarozeni: '1982-11-08', oddeleni: 'Obchodní oddělení',      pozice: 'Obchodní zástupce',      datNastupu: '2015-09-01', email: 'p.dvorak@csob.cz',         telefon: '+420 603 456 789' },
+    { id: 4,  osobniCislo: 'EMP004', prijmeni: 'Procházková', jmeno: 'Jana',     datNarozeni: '1995-02-14', oddeleni: 'Účetnictví',             pozice: 'Účetní',                 datNastupu: '2021-03-15', email: 'j.prochazkova@csob.cz',    telefon: '+420 604 567 890' },
+    { id: 5,  osobniCislo: 'EMP005', prijmeni: 'Krejčí',      jmeno: 'Tomáš',    datNarozeni: '1988-05-30', oddeleni: 'Informační technologie', pozice: 'Správce sítě',           datNastupu: '2017-11-01', email: 't.krejci@csob.cz',         telefon: '+420 605 678 901' },
+    { id: 6,  osobniCislo: 'EMP006', prijmeni: 'Horáková',    jmeno: 'Lucie',    datNarozeni: '1992-04-18', oddeleni: 'Marketing',              pozice: 'Marketingová specialistka', datNastupu: '2020-02-01', email: 'l.horakova@csob.cz',    telefon: '+420 606 111 222' },
+    { id: 7,  osobniCislo: 'EMP007', prijmeni: 'Marková',     jmeno: 'Tereza',   datNarozeni: '1994-09-03', oddeleni: 'Účetnictví',             pozice: 'Finanční analytik',      datNastupu: '2022-07-01', email: 't.markova@csob.cz',        telefon: '+420 607 222 333' },
+    { id: 8,  osobniCislo: 'EMP008', prijmeni: 'Beneš',       jmeno: 'Ondřej',   datNarozeni: '1980-12-25', oddeleni: 'Management',             pozice: 'Vedoucí oddělení IT',    datNastupu: '2012-04-10', email: 'o.benes@csob.cz',          telefon: '+420 608 333 444' },
+    { id: 9,  osobniCislo: 'EMP009', prijmeni: 'Pokorná',     jmeno: 'Veronika', datNarozeni: '1997-06-11', oddeleni: 'Lidské zdroje',          pozice: 'HR koordinátorka',       datNastupu: '2023-01-16', email: 'v.pokorna@csob.cz',        telefon: '+420 609 444 555' },
+    { id: 10, osobniCislo: 'EMP010', prijmeni: 'Kratochvíl',  jmeno: 'Martin',   datNarozeni: '1986-08-07', oddeleni: 'Obchodní oddělení',      pozice: 'Key Account Manager',    datNastupu: '2016-03-01', email: 'm.kratochvil@csob.cz',     telefon: '+420 610 555 666' },
+    { id: 11, osobniCislo: 'EMP011', prijmeni: 'Šimková',     jmeno: 'Eva',      datNarozeni: '1991-01-30', oddeleni: 'Právo',                  pozice: 'Právní poradkyně',       datNastupu: '2019-09-01', email: 'e.simkova@csob.cz',        telefon: '+420 611 666 777' },
+    { id: 12, osobniCislo: 'EMP012', prijmeni: 'Kopecký',     jmeno: 'Radek',    datNarozeni: '1983-07-14', oddeleni: 'Informační technologie', pozice: 'DevOps inženýr',         datNastupu: '2014-11-15', email: 'r.kopecky@csob.cz',        telefon: '+420 612 777 888' },
+    { id: 13, osobniCislo: 'EMP013', prijmeni: 'Blahová',     jmeno: 'Petra',    datNarozeni: '1996-03-22', oddeleni: 'Marketing',              pozice: 'Grafická designérka',    datNastupu: '2021-08-01', email: 'p.blahova@csob.cz',        telefon: '+420 613 888 999' },
+    { id: 14, osobniCislo: 'EMP014', prijmeni: 'Vlček',       jmeno: 'Jakub',    datNarozeni: '1989-11-05', oddeleni: 'Logistika',              pozice: 'Logistický koordinátor', datNastupu: '2016-06-01', email: 'j.vlcek@csob.cz',          telefon: '+420 614 999 000' },
+    { id: 15, osobniCislo: 'EMP015', prijmeni: 'Říhová',      jmeno: 'Michaela', datNarozeni: '1993-05-19', oddeleni: 'Obchodní oddělení',      pozice: 'Obchodní zástupkyně',    datNastupu: '2020-10-01', email: 'm.rihova@csob.cz',         telefon: '+420 615 000 111' },
   ];
   DB.meta.nextId = 200;
 
@@ -76,35 +86,87 @@ function loadDemoData() {
 
   // Vacation
   DB.vacation = [
-    { id: DB.meta.nextId++, zamestnanecId: 1, od: `${y}-02-17`, do: `${y}-02-21`, typ: 'Řádná dovolená',  stav: 'Schváleno',            poznamka: 'Lyžování' },
-    { id: DB.meta.nextId++, zamestnanecId: 2, od: `${y}-03-03`, do: `${y}-03-07`, typ: 'Řádná dovolená',  stav: 'Schváleno',            poznamka: '' },
-    { id: DB.meta.nextId++, zamestnanecId: 3, od: `${y}-${m}-20`, do: `${y}-${m}-24`, typ: 'Řádná dovolená', stav: 'Čeká na schválení', poznamka: 'Dovolená u moře' },
-    { id: DB.meta.nextId++, zamestnanecId: 4, od: `${y}-01-13`, do: `${y}-01-17`, typ: 'Řádná dovolená',  stav: 'Schváleno',            poznamka: '' },
-    { id: DB.meta.nextId++, zamestnanecId: 5, od: `${y}-${m}-05`, do: `${y}-${m}-05`, typ: 'Osobní volno', stav: 'Schváleno',           poznamka: 'Návštěva lékaře' },
+    { id: DB.meta.nextId++, zamestnanecId: 1,  od: `${y}-02-17`, do: `${y}-02-21`, typ: 'Řádná dovolená',  stav: 'Schváleno',            poznamka: 'Lyžování' },
+    { id: DB.meta.nextId++, zamestnanecId: 2,  od: `${y}-03-03`, do: `${y}-03-07`, typ: 'Řádná dovolená',  stav: 'Schváleno',            poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 3,  od: `${y}-${m}-20`, do: `${y}-${m}-24`, typ: 'Řádná dovolená', stav: 'Čeká na schválení', poznamka: 'Dovolená u moře' },
+    { id: DB.meta.nextId++, zamestnanecId: 4,  od: `${y}-01-13`, do: `${y}-01-17`, typ: 'Řádná dovolená',  stav: 'Schváleno',            poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 5,  od: `${y}-${m}-05`, do: `${y}-${m}-05`, typ: 'Osobní volno', stav: 'Schváleno',           poznamka: 'Návštěva lékaře' },
+    { id: DB.meta.nextId++, zamestnanecId: 6,  od: `${y}-04-07`, do: `${y}-04-11`, typ: 'Řádná dovolená',  stav: 'Čeká na schválení',    poznamka: 'Velikonoce' },
+    { id: DB.meta.nextId++, zamestnanecId: 8,  od: `${y}-01-27`, do: `${y}-01-31`, typ: 'Řádná dovolená',  stav: 'Schváleno',            poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 10, od: `${y}-02-03`, do: `${y}-02-07`, typ: 'Řádná dovolená',  stav: 'Schváleno',            poznamka: 'Lyžovačka' },
+    { id: DB.meta.nextId++, zamestnanecId: 11, od: `${y}-${m}-10`, do: `${y}-${m}-10`, typ: 'Osobní volno', stav: 'Schváleno',           poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 12, od: `${y}-05-05`, do: `${y}-05-09`, typ: 'Řádná dovolená',  stav: 'Čeká na schválení',    poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 14, od: `${y}-${m}-24`, do: `${y}-${m}-28`, typ: 'Řádná dovolená', stav: 'Schváleno',         poznamka: 'Výlet do Itálie' },
+    { id: DB.meta.nextId++, zamestnanecId: 15, od: `${y}-03-17`, do: `${y}-03-21`, typ: 'Nemocenská',       stav: 'Schváleno',            poznamka: '' },
   ];
 
   // Users
   DB.users = [
-    { id: 1, username: 'ADMIN',       heslo: 'admin123', zamestnanecId: null, role: 'admin' },
-    { id: 2, username: 'NOVAK',       heslo: 'heslo123', zamestnanecId: 1,    role: 'manager' },
-    { id: 3, username: 'SVOBODOVA',   heslo: 'heslo123', zamestnanecId: 2,    role: 'zamestnanec' },
-    { id: 4, username: 'DVORAK',      heslo: 'heslo123', zamestnanecId: 3,    role: 'zamestnanec' },
-    { id: 5, username: 'PROCHAZKOVA', heslo: 'heslo123', zamestnanecId: 4,    role: 'zamestnanec' },
-    { id: 6, username: 'KREJCI',      heslo: 'heslo123', zamestnanecId: 5,    role: 'zamestnanec' },
+    { id: 1,  username: 'ADMIN',        heslo: 'admin123', zamestnanecId: null, role: 'admin' },
+    { id: 2,  username: 'NOVAK',        heslo: 'heslo123', zamestnanecId: 1,    role: 'manager' },
+    { id: 3,  username: 'SVOBODOVA',    heslo: 'heslo123', zamestnanecId: 2,    role: 'zamestnanec' },
+    { id: 4,  username: 'DVORAK',       heslo: 'heslo123', zamestnanecId: 3,    role: 'zamestnanec' },
+    { id: 5,  username: 'PROCHAZKOVA',  heslo: 'heslo123', zamestnanecId: 4,    role: 'zamestnanec' },
+    { id: 6,  username: 'KREJCI',       heslo: 'heslo123', zamestnanecId: 5,    role: 'zamestnanec' },
+    { id: 7,  username: 'HORAKOVA',     heslo: 'heslo123', zamestnanecId: 6,    role: 'zamestnanec' },
+    { id: 8,  username: 'MARKOVA',      heslo: 'heslo123', zamestnanecId: 7,    role: 'zamestnanec' },
+    { id: 9,  username: 'BENES',        heslo: 'heslo123', zamestnanecId: 8,    role: 'manager' },
+    { id: 10, username: 'POKORNA',      heslo: 'heslo123', zamestnanecId: 9,    role: 'zamestnanec' },
+    { id: 11, username: 'KRATOCHVIL',   heslo: 'heslo123', zamestnanecId: 10,   role: 'zamestnanec' },
+    { id: 12, username: 'SIMKOVA',      heslo: 'heslo123', zamestnanecId: 11,   role: 'zamestnanec' },
+    { id: 13, username: 'KOPECKY',      heslo: 'heslo123', zamestnanecId: 12,   role: 'zamestnanec' },
+    { id: 14, username: 'BLAHOVA',      heslo: 'heslo123', zamestnanecId: 13,   role: 'zamestnanec' },
+    { id: 15, username: 'VLCEK',        heslo: 'heslo123', zamestnanecId: 14,   role: 'zamestnanec' },
+    { id: 16, username: 'RIHOVA',       heslo: 'heslo123', zamestnanecId: 15,   role: 'zamestnanec' },
   ];
 
-  // Presence – demo entries for today and yesterday
-  const today     = new Date().toISOString().slice(0, 10);
-  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  // Presence – entries for today, yesterday and day before yesterday
+  const today  = new Date().toISOString().slice(0, 10);
+  const d = (n) => new Date(Date.now() - n * 86400000).toISOString().slice(0, 10);
   DB.presence = [
-    { id: DB.meta.nextId++, zamestnanecId: 1, datum: today,     stav: 'V kanceláři', poznamka: '' },
-    { id: DB.meta.nextId++, zamestnanecId: 2, datum: today,     stav: 'Home office', poznamka: 'Dopoledne online' },
-    { id: DB.meta.nextId++, zamestnanecId: 3, datum: today,     stav: 'Dovolená',    poznamka: '' },
-    { id: DB.meta.nextId++, zamestnanecId: 5, datum: today,     stav: 'Home office', poznamka: '' },
-    { id: DB.meta.nextId++, zamestnanecId: 1, datum: yesterday, stav: 'V kanceláři', poznamka: '' },
-    { id: DB.meta.nextId++, zamestnanecId: 2, datum: yesterday, stav: 'V kanceláři', poznamka: '' },
-    { id: DB.meta.nextId++, zamestnanecId: 3, datum: yesterday, stav: 'Jiný důvod',  poznamka: 'Pracovní cesta' },
-    { id: DB.meta.nextId++, zamestnanecId: 4, datum: yesterday, stav: 'Žádná směna', poznamka: '' },
+    // Dnes
+    { id: DB.meta.nextId++, zamestnanecId: 1,  datum: today,  stav: 'V kanceláři', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 2,  datum: today,  stav: 'Home office', poznamka: 'Dopoledne online' },
+    { id: DB.meta.nextId++, zamestnanecId: 3,  datum: today,  stav: 'Dovolená',    poznamka: 'Lyžování' },
+    { id: DB.meta.nextId++, zamestnanecId: 4,  datum: today,  stav: 'V kanceláři', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 5,  datum: today,  stav: 'Home office', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 6,  datum: today,  stav: 'V kanceláři', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 7,  datum: today,  stav: 'Žádná směna', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 8,  datum: today,  stav: 'V kanceláři', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 9,  datum: today,  stav: 'Home office', poznamka: 'Celý den remote' },
+    { id: DB.meta.nextId++, zamestnanecId: 10, datum: today,  stav: 'V kanceláři', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 11, datum: today,  stav: 'Jiný důvod',  poznamka: 'Pracovní cesta Praha' },
+    { id: DB.meta.nextId++, zamestnanecId: 12, datum: today,  stav: 'V kanceláři', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 13, datum: today,  stav: 'Home office', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 14, datum: today,  stav: 'Dovolená',    poznamka: '' },
+    // Včera
+    { id: DB.meta.nextId++, zamestnanecId: 1,  datum: d(1),   stav: 'V kanceláři', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 2,  datum: d(1),   stav: 'V kanceláři', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 3,  datum: d(1),   stav: 'Dovolená',    poznamka: 'Lyžování' },
+    { id: DB.meta.nextId++, zamestnanecId: 4,  datum: d(1),   stav: 'Žádná směna', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 5,  datum: d(1),   stav: 'Home office', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 6,  datum: d(1),   stav: 'V kanceláři', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 7,  datum: d(1),   stav: 'V kanceláři', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 8,  datum: d(1),   stav: 'Jiný důvod',  poznamka: 'Školení SAP' },
+    { id: DB.meta.nextId++, zamestnanecId: 9,  datum: d(1),   stav: 'Home office', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 10, datum: d(1),   stav: 'V kanceláři', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 11, datum: d(1),   stav: 'V kanceláři', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 12, datum: d(1),   stav: 'Home office', poznamka: 'Oprava serverů remote' },
+    { id: DB.meta.nextId++, zamestnanecId: 13, datum: d(1),   stav: 'V kanceláři', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 14, datum: d(1),   stav: 'Dovolená',    poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 15, datum: d(1),   stav: 'V kanceláři', poznamka: '' },
+    // Předevčírem
+    { id: DB.meta.nextId++, zamestnanecId: 1,  datum: d(2),   stav: 'V kanceláři', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 2,  datum: d(2),   stav: 'Home office', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 4,  datum: d(2),   stav: 'V kanceláři', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 5,  datum: d(2),   stav: 'V kanceláři', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 6,  datum: d(2),   stav: 'Home office', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 8,  datum: d(2),   stav: 'V kanceláři', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 9,  datum: d(2),   stav: 'V kanceláři', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 10, datum: d(2),   stav: 'Jiný důvod',  poznamka: 'Nemoc' },
+    { id: DB.meta.nextId++, zamestnanecId: 11, datum: d(2),   stav: 'V kanceláři', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 12, datum: d(2),   stav: 'V kanceláři', poznamka: '' },
+    { id: DB.meta.nextId++, zamestnanecId: 15, datum: d(2),   stav: 'Home office', poznamka: 'Jednání s klientem online' },
   ];
 
   DB.save();
