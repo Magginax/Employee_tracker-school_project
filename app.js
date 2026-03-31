@@ -36,6 +36,9 @@ const DB = {
   }
 };
 
+// ---- DEMO DATA VERSION ----
+const DEMO_VERSION = 2;
+
 // ---- CURRENT USER & ROLES ----
 let currentUser = null;
 const ROLE_LABELS = { admin: 'Administrátor', manager: 'Manager', zamestnanec: 'Zaměstnanec' };
@@ -169,6 +172,7 @@ function loadDemoData() {
     { id: DB.meta.nextId++, zamestnanecId: 15, datum: d(2),   stav: 'Home office', poznamka: 'Jednání s klientem online' },
   ];
 
+  DB.meta.demoVersion = DEMO_VERSION;
   DB.save();
 }
 
@@ -1557,7 +1561,10 @@ function triggerBsod() {
 // ============================================================
 window.addEventListener('DOMContentLoaded', () => {
   DB.load();
-  if (DB.employees.length === 0 || DB.users.length === 0) loadDemoData();
+  if (DB.employees.length === 0 || DB.users.length === 0 || DB.meta.demoVersion !== DEMO_VERSION) {
+    DB.employees = []; DB.timesheet = []; DB.vacation = []; DB.presence = []; DB.meta.nextId = 100;
+    loadDemoData();
+  }
 
   // Clock
   updateClock();
