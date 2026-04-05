@@ -14,28 +14,6 @@ Data se ukládají lokálně v prohlížeči (localStorage). Nic se neodesílá 
 
 ---
 
-## Přihlášení a role
-
-Aplikace má tři úrovně přístupu. Co uživatel vidí a může dělat, závisí na jeho roli.
-
-| Uživatel | Heslo | Role |
-|---|---|---|
-| ADMIN | admin123 | Administrátor |
-| NOVAK | heslo123 | Manager |
-| BENES | heslo123 | Manager |
-| SVOBODOVA | heslo123 | Zaměstnanec |
-| KREJCI | heslo123 | Zaměstnanec |
-| KOPECKY | heslo123 | Zaměstnanec |
-| HORAKOVA | heslo123 | Zaměstnanec |
-
-Na přihlašovací obrazovce se zobrazuje plovoucí okno s demo přístupy — kliknutím na jméno se formulář vyplní automaticky.
-
-**Cesta:** Úvodní obrazovka aplikace
-
-<!-- screenshot: přihlašovací obrazovka se zobrazeným oknem demo přístupů -->
-
----
-
 ## Funkce
 
 ### Přítomnost
