@@ -6,9 +6,9 @@ Webová aplikace simulující HR modul podnikového informačního systému SAP.
 
 ---
 
-## O co jde
+## Popis aplikace
 
-Firma jako ČSOB potřebuje evidovat, kdo pracuje odkud, kolik hodin za měsíc odpracoval, jaké má dovolené a kdo je zrovna v kanceláři. V reálném světě tyhle věci řeší SAP HCM nebo SuccessFactors. Tato aplikace ukazuje, jak by taková evidence mohla vypadat z pohledu uživatele — bez nutnosti mít skutečný SAP server.
+Firma jako ČSOB potřebuje evidovat, kdo pracuje odkud, kolik hodin za měsíc odpracoval, jaké má dovolené a kdo je zrovna v kanceláři. V reálném prostředí tyto agendy zajišťuje SAP HCM nebo SuccessFactors. Tato aplikace ukazuje, jak by taková evidence mohla vypadat z pohledu uživatele — bez nutnosti mít skutečný SAP server.
 
 Data se ukládají lokálně v prohlížeči (localStorage). Nic se neodesílá nikam ven.
 
@@ -115,7 +115,7 @@ Zobrazuje čtyři klíčové ukazatele: celkový počet zaměstnanců, celkové 
 
 ### Export dat
 
-Menu **Nástroje → Export dat (JSON)** stáhne veškerá data (zaměstnanci, docházka, dovolené, přítomnost) jako JSON soubor. Hodí se pro zálohu nebo přenos dat do jiného systému.
+Menu **Nástroje → Export dat (JSON)** stáhne veškerá data (zaměstnanci, docházka, dovolené, přítomnost) jako JSON soubor. Slouží pro zálohu nebo přenos dat do jiného systému.
 
 Ve stejném menu lze načíst vzorová data nebo vymazat všechna data a začít od nuly.
 
@@ -137,7 +137,7 @@ Pole v nástrojové liště (levý dolní roh, popis "Transakce") přijímá SAP
 
 Dostupné kódy: `PA20`, `PA30`, `PA40` (zaměstnanci), `PT10`, `PT40` (docházka), `PT50`, `PT60` (dovolená), `PP10`, `PP20` (přítomnost), `S001` (přehledy).
 
-Jsou tam i dva easter eggy — `KAFE` a `DOKTOR`.
+Aplikace obsahuje také dva easter eggy — `KAFE` a `DOKTOR`.
 
 **Cesta:** pole Transakce v nástrojové liště
 
@@ -149,7 +149,7 @@ Jsou tam i dva easter eggy — `KAFE` a `DOKTOR`.
 
 **Věrohodná imitace SAP.** Aplikace kopíruje vizuální jazyk SAP — title bar, menu bar, toolbar, ALV tabulky, stavový řádek s hodinami, transakční kódy. Komukoliv, kdo SAP zná, přijde rozhraní povědomé.
 
-**Rolový přístup funguje důsledně.** Každá akce se kontroluje — zaměstnanec nevidí tlačítka, na která nemá právo, ne jen že dostane chybu po kliknutí.
+**Rolový přístup funguje důsledně.** Každá akce se kontroluje — zaměstnanec nevidí tlačítka, na která nemá právo, nikoli až po kliknutí obdrží chybovou hlášku.
 
 **Workflow schvalování.** Dovolené mají třístavový životní cyklus a manager je může schvalovat nebo zamítat přímo z tabulky nebo z přehledů.
 
